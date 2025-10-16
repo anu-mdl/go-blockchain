@@ -15,21 +15,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// import (
-// 	"crypto/sha256"
-// 	"encoding/hex"
-// 	"encoding/json"
-// 	"io"
-// 	"log"
-// 	"net/http"
-// 	"os"
-// 	"time"
-
-// 	"github.com/davecgh/go-spew/spew"
-// 	"github.com/gorilla/mux"
-// 	"github.com/joho/godotenv"
-// )
-
 type Block struct {
 	Index     int
 	Timestamp string
@@ -94,8 +79,8 @@ func makeMuxRouter() http.Handler {
 
 func run() error {
 	mux := makeMuxRouter()
-	httpAddr := os.Getenv("ADDR")
-	log.Println("Listening on ", os.Getenv("ADDR"))
+	httpAddr := os.Getenv("PORT")
+	log.Println("Listening on ", os.Getenv("PORT"))
 	s := &http.Server{
 		Addr:           ":" + httpAddr,
 		Handler:        mux,
@@ -165,11 +150,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go func() {
-		t := time.Now()
-		genesisBlock := Block{0, t.String(), 0, "", ""}
-		spew.Dump(genesisBlock)
-		Blockchain = append(Blockchain, genesisBlock)
-	}()
+	t := time.Now()
+	
+	genesisBlock := Block{
+		Index:     0,
+		Timestamp: t.String(),
+		BPM:       0,
+		PrevHash:  "",
+	}
+
+	genesisBlock.Hash = calculateHash(genesisBlock)
+	Blockchain = append(Blockchain, genesisBlock)
+	spew.Dump(genesisBlock)
+
 	log.Fatal(run())
 }
